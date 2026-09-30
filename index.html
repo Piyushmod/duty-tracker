@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>DutyTrack - Attendance</title>
+
+<style>
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #0f1115;
+  color: #fff;
+}
+
+header {
+  padding: 20px;
+  text-align: center;
+  background: #171a21;
+  border-bottom: 1px solid #292d36;
+}
+
+header h1 {
+  margin: 0;
+  font-size: 26px;
+}
+
+header p {
+  margin: 7px 0 0;
+  color: #aeb4c0;
+  font-size: 14px;
+}
+
+.container {
+  max-width: 700px;
+  margin: auto;
+  padding: 15px;
+}
+
+.month-box {
+  background: #171a21;
+  padding: 15px;
+  border-radius: 14px;
+  margin-bottom: 15px;
+}
+
+.month-box label {
+  display: block;
+  margin-bottom: 8px;
+  color: #aeb4c0;
+}
+
+input,
+select {
+  width: 100%;
+  padding: 12px;
+  border-radius: 10px;
+  border: 1px solid #303541;
+  background: #0f1115;
+  color: white;
+  font-size: 16px;
+}
+
+.summary {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.card {
+  background: #171a21;
+  padding: 15px;
+  border-radius: 14px;
+  border: 1px solid #292d36;
+}
+
+.card small {
+  color: #aeb4c0;
+}
+
+.card strong {
+  display: block;
+  font-size: 25px;
+  margin-top: 6px;
+}
+
+.progress-box {
+  background: #171a21;
+  padding: 15px;
+  border-radius: 14px;
+  margin-bottom: 15px;
+}
+
+.progress {
+  height: 12px;
+  background: #292d36;
+  border-radius: 20px;
+  overflow: hidden;
+  margin-top: 10px;
+}
+
+.progress-bar {
+  height: 100%;
+  width: 0%;
+  background: #31d158;
+  transition: 0.3s;
+}
+
+.day {
+  background: #171a21;
+  border: 1px solid #292d36;
+  border-radius: 14px;
+  padding: 13px;
+  margin-bottom: 10px;
+}
+
+.day-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.day-number {
+  font-weight: bold;
+}
+
+.date {
+  color: #aeb4c0;
+  font-size: 13px;
+}
+
+.status-buttons {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+}
+
+.status-buttons button {
+  padding: 10px 5px;
+  border: 0;
+  border-radius: 9px;
+  background: #292d36;
+  color: white;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.status-buttons button:hover {
+  opacity: 0.8;
+}
+
+button.active-present {
+  background: #18863b;
+}
+
+button.active-half {
+  background: #b8860b;
+}
+
+button.active-absent {
+  background: #b42318;
+}
+
+button.active-leave {
+  background: #555b68;
+}
+
+.earning {
+  margin-top: 10px;
+}
+
+.actions {
+  display: flex;
+  gap: 10px;
+  margin: 20px 0;
+}
+
+.actions button {
+  flex: 1;
+  padding: 13px;
+  border: 0;
+  border-radius: 10px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.clear {
+  background: #b42318;
+  color: white;
+}
+
+.export {
+  background: #2563eb;
+  color: white;
+}
+
+footer {
+  text-align: center;
+  color: #777;
+  padding: 25px;
+  font-size: 13px;
+}
+
+@media (max-width: 450px) {
+  .status-buttons {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  <h1>📊 DutyTrack</h1>
+  <p>My Monthly Duty & Attendance Tracker</p>
+</header>
+
+<div class="container">
+
+  <div class="month-box">
+    <label>Select Month</label>
+    <input type="month" id="monthPicker">
+  </div>
+
+  <div class="summary">
+
+    <div class="card">
+      <small>Working Days</small>
+      <strong id="workingDays">0</strong>
+    </div>
+
+    <div class="card">
+      <small>Present</small>
+      <strong id="present">0</strong>
+    </div>
+
+    <div class="card">
+      <small>Half Day</small>
+      <strong id="halfDay">0</strong>
+    </div>
+
+    <div class="card">
+      <small>Absent</small>
+      <strong id="absent">0</strong>
+    </div>
+
+    <div class="card">
+      <small>Leave</small>
+      <strong id="leave">0</strong>
+    </div>
+
+    <div class="card">
+      <small>Attendance %</small>
+      <strong id="percentage">0%</strong>
+    </div>
+
+  </div>
+
+  <div class="progress-box">
+    <b>Attendance Progress</b>
+
+    <div class="progress">
+      <div class="progress-bar" id="progressBar"></div>
+    </div>
+  </div>
+
+  <div id="days"></div>
+
+  <div class="actions">
+    <button class="export" onclick="exportData()">📥 Export</button>
+    <button class="clear" onclick="clearMonth()">🗑️ Clear Month</button>
+  </div>
+
+</div>
+
+<footer>
+  DutyTrack • Your consistency matters 💪
+</footer>
+
+<script>
+
+const monthPicker = document.getElementById("monthPicker");
+
+const now = new Date();
+
+const currentMonth =
+  now.getFullYear() +
+  "-" +
+  String(now.getMonth() + 1).padStart(2, "0");
+
+monthPicker.value = currentMonth;
+
+let data = JSON.parse(
+  localStorage.getItem("dutyTrackerData") || "{}"
+);
+
+function saveData() {
+
+  localStorage.setItem(
+    "dutyTrackerData",
+    JSON.stringify(data)
+  );
+
+}
+
+function getDaysInMonth(year, month) {
+
+  return new Date(year, month, 0).getDate();
+
+}
+
+function render() {
+
+  const selected = monthPicker.value;
+
+  if (!selected) return;
+
+  const parts = selected.split("-");
+
+  const year = Number(parts[0]);
+
+  const month = Number(parts[1]);
+
+  const totalDays =
+    getDaysInMonth(year, month);
+
+  const monthData =
+    data[selected] || {};
+
+  const daysContainer =
+    document.getElementById("days");
+
+  daysContainer.innerHTML = "";
+
+  let present = 0;
+  let half = 0;
+  let absent = 0;
+  let leave = 0;
+  let working = 0;
+
+  for (let day = 1; day <= totalDays; day++) {
+
+    const dateObj =
+      new Date(year, month - 1, day);
+
+    const weekday =
+      dateObj.toLocaleDateString(
+        "en-IN",
+        { weekday: "short" }
+      );
+
+    const key = String(day);
+
+    const record =
+      monthData[key] || {};
+
+    const status =
+      record.status || "";
+
+    if (status === "present") {
+
+      present++;
+      working++;
+
+    }
+
+    if (status === "half") {
+
+      half++;
+      working++;
+
+    }
+
+    if (status === "absent") {
+
+      absent++;
+      working++;
+
+    }
+
+    if (status === "leave") {
+
+      leave++;
+
+    }
+
+    const div =
+      document.createElement("div");
+
+    div.className = "day";
+
+    div.innerHTML = `
+
+      <div class="day-top">
+
+        <div>
+
+          <div class="day-number">
+            Day ${day}
+          </div>
+
+          <div class="date">
+            ${weekday} • ${day}/${month}/${year}
+          </div>
+
+        </div>
+
+      </div>
+
+      <div class="status-buttons">
+
+        <button
+          onclick="setStatus(${day}, 'present')"
+          class="${status === "present"
+            ? "active-present" : ""}">
+          ✅ Present
+        </button>
+
+        <button
+          onclick="setStatus(${day}, 'half')"
+          class="${status === "half"
+            ? "active-half" : ""}">
+          🌓 Half
+        </button>
+
+        <button
+          onclick="setStatus(${day}, 'absent')"
+          class="${status === "absent"
+            ? "active-absent" : ""}">
+          ❌ Absent
+        </button>
+
+        <button
+          onclick="setStatus(${day}, 'leave')"
+          class="${status === "leave"
+            ? "active-leave" : ""}">
+          🏖️ Leave
+        </button>
+
+      </div>
+
+      <div class="earning">
+
+        <input
+          type="number"
+          placeholder="Today's earning ₹"
+          value="${record.earning || ""}"
+          onchange="setEarning(${day}, this.value)"
+        >
+
+      </div>
+
+    `;
+
+    daysContainer.appendChild(div);
+
+  }
+
+  document.getElementById("workingDays")
+    .textContent = working;
+
+  document.getElementById("present")
+    .textContent = present;
+
+  document.getElementById("halfDay")
+    .textContent = half;
+
+  document.getElementById("absent")
+    .textContent = absent;
+
+  document.getElementById("leave")
+    .textContent = leave;
+
+  let percentage = 0;
+
+  if (working > 0) {
+
+    percentage =
+      ((present + half * 0.5) / working) * 100;
+
+  }
+
+  percentage =
+    Math.round(percentage * 10) / 10;
+
+  document.getElementById("percentage")
+    .textContent = percentage + "%";
+
+  document.getElementById("progressBar")
+    .style.width = percentage + "%";
+
+}
+
+function setStatus(day, status) {
+
+  const selected =
+    monthPicker.value;
+
+  if (!data[selected]) {
+
+    data[selected] = {};
+
+  }
+
+  if (!data[selected][day]) {
+
+    data[selected][day] = {};
+
+  }
+
+  data[selected][day].status =
+    status;
+
+  saveData();
+
+  render();
+
+}
+
+function setEarning(day, value) {
+
+  const selected =
+    monthPicker.value;
+
+  if (!data[selected]) {
+
+    data[selected] = {};
+
+  }
+
+  if (!data[selected][day]) {
+
+    data[selected][day] = {};
+
+  }
+
+  data[selected][day].earning =
+    Number(value) || 0;
+
+  saveData();
+
+}
+
+function clearMonth() {
+
+  const selected =
+    monthPicker.value;
+
+  const confirmDelete =
+    confirm(
+      "Is month ka sara attendance data delete karna hai?"
+    );
+
+  if (!confirmDelete) return;
+
+  delete data[selected];
+
+  saveData();
+
+  render();
+
+}
+
+function exportData() {
+
+  const selected =
+    monthPicker.value;
+
+  const monthData =
+    data[selected] || {};
+
+  let text =
+    "DUTYTRACK ATTENDANCE\n";
+
+  text +=
+    "Month: " + selected + "\n\n";
+
+  let totalEarning = 0;
+
+  Object.keys(monthData).forEach(day => {
+
+    const record =
+      monthData[day];
+
+    text +=
+      "Day " + day +
+      " | " +
+      (record.status || "Not marked") +
+      " | ₹" +
+      (record.earning || 0) +
+      "\n";
+
+    totalEarning +=
+      Number(record.earning || 0);
+
+  });
+
+  text +=
+    "\nTotal Earning: ₹" +
+    totalEarning;
+
+  const blob =
+    new Blob(
+      [text],
+      { type: "text/plain" }
+    );
+
+  const url =
+    URL.createObjectURL(blob);
+
+  const a =
+    document.createElement("a");
+
+  a.href = url;
+
+  a.download =
+    "DutyTrack-" +
+    selected +
+    ".txt";
+
+  a.click();
+
+  URL.revokeObjectURL(url);
+
+}
+
+monthPicker.addEventListener(
+  "change",
+  render
+);
+
+render();
+
+</script>
+
+</body>
+</html>
